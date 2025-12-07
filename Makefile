@@ -1,6 +1,6 @@
 # Compiler & flags
 CXX = g++
-CXXFLAGS = -O3 -Wall -w -fPIC
+CXXFLAGS = -O3 -Wall -w -fPIC -std=c++11
 LDFLAGS = -shared -lpthread
 
 # Get version from file
@@ -16,9 +16,10 @@ OBJS := librtsplink.o
 # Lib name
 TARGET := librtsplink.so
 
-# Pkg-config dependencies
-PKG_DEPS := opencv libavcodec libavformat libswscale libavutil
-PKG_FLAGS := $(shell pkg-config --cflags --libs $(PKG_DEPS))
+# Pkg-config dependencies (try opencv4 first, fallback to opencv)
+OPENCV_PKG := $(shell pkg-config --exists opencv4 && echo opencv4 || echo opencv)
+PKG_DEPS := $(OPENCV_PKG) libavcodec libavformat libswscale libavutil
+PKG_FLAGS := $(shell pkg-config --cflags --libs $(PKG_DEPS) 2>/dev/null)
 
 all: $(TARGET)
 

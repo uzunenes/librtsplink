@@ -1,6 +1,7 @@
 #include "../include/librtsplink.h"
 #include <atomic>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <mutex>
 #include <opencv2/opencv.hpp>
@@ -57,8 +58,8 @@ static cv::Mat *capture_c(cv::VideoCapture *opencv_videoCapture_ptr, double *ima
 
         if (image_matris_ptr->cols <= 0 || image_matris_ptr->rows <= 0)
         {
-            delete image_matris_ptr;
             printf("Camera image reading error, image width: [%d] - height: [%d] \n", image_matris_ptr->cols, image_matris_ptr->rows);
+            delete image_matris_ptr;
             return nullptr;
         }
 
@@ -269,32 +270,39 @@ int rtsplink_connect_and_follow_ip_camera_connection_background(const char *came
     int result = 0;
     g_camera_struct_ptr->backend_lib_flag = backend_lib_flag;
 
-    strcpy(g_camera_struct_ptr->camera_connection_information_struct.ip, camera_ip);
+    strncpy(g_camera_struct_ptr->camera_connection_information_struct.ip, camera_ip, sizeof(g_camera_struct_ptr->camera_connection_information_struct.ip) - 1);
+    g_camera_struct_ptr->camera_connection_information_struct.ip[sizeof(g_camera_struct_ptr->camera_connection_information_struct.ip) - 1] = '\0';
     g_camera_struct_ptr->camera_connection_information_struct.port = port;
 
     if (g_camera_struct_ptr->backend_lib_flag == e_rtsplink_rtsp_backend_lib_GSTREAMER)
     {
         if (camera_username == nullptr && camera_password == nullptr && mount_point == nullptr)
         {
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtspsrc location=rtsp://%s:%d %s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_default_gst_pipeline);
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtspsrc location=rtsp://%s:%d %s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_default_gst_pipeline);
         }
         else if (camera_username == nullptr && camera_password == nullptr && mount_point != nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtspsrc location=rtsp://%s:%d%s %s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point, g_default_gst_pipeline);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point, sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.mount_point[sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtspsrc location=rtsp://%s:%d%s %s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point, g_default_gst_pipeline);
         }
         else if (camera_username != nullptr && camera_password != nullptr && mount_point == nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtspsrc location=rtsp://%s:%s@%s:%d %s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_default_gst_pipeline);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username, sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.username[sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password, sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.password[sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtspsrc location=rtsp://%s:%s@%s:%d %s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_default_gst_pipeline);
         }
         else if (camera_username != nullptr && camera_password != nullptr && mount_point != nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtspsrc location=rtsp://%s:%s@%s:%d%s %s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point, g_default_gst_pipeline);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username, sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.username[sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password, sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.password[sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point, sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.mount_point[sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtspsrc location=rtsp://%s:%s@%s:%d%s %s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point, g_default_gst_pipeline);
         }
         else
         {
@@ -306,29 +314,35 @@ int rtsplink_connect_and_follow_ip_camera_connection_background(const char *came
     {
         if (camera_username == nullptr && camera_password == nullptr && mount_point == nullptr)
         {
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtsp://%s:%d", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port);
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtsp://%s:%d", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port);
         }
         else if (camera_username == nullptr && camera_password == nullptr && mount_point != nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtsp://%s:%d%s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point, sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.mount_point[sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtsp://%s:%d%s", g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point);
         }
         else if (camera_username != nullptr && camera_password != nullptr && mount_point == nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtsp://%s:%s@%s:%d", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username, sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.username[sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password, sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.password[sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtsp://%s:%s@%s:%d", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port);
         }
         else if (camera_username != nullptr && camera_password != nullptr && mount_point != nullptr)
         {
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password);
-            strcpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point);
-            sprintf(g_camera_struct_ptr->camera_connection_information_struct.url, "rtsp://%s:%s@%s:%d%s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point);
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.username, camera_username, sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.username[sizeof(g_camera_struct_ptr->camera_connection_information_struct.username) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.password, camera_password, sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.password[sizeof(g_camera_struct_ptr->camera_connection_information_struct.password) - 1] = '\0';
+            strncpy(g_camera_struct_ptr->camera_connection_information_struct.mount_point, mount_point, sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1);
+            g_camera_struct_ptr->camera_connection_information_struct.mount_point[sizeof(g_camera_struct_ptr->camera_connection_information_struct.mount_point) - 1] = '\0';
+            snprintf(g_camera_struct_ptr->camera_connection_information_struct.url, sizeof(g_camera_struct_ptr->camera_connection_information_struct.url), "rtsp://%s:%s@%s:%d%s", g_camera_struct_ptr->camera_connection_information_struct.username, g_camera_struct_ptr->camera_connection_information_struct.password, g_camera_struct_ptr->camera_connection_information_struct.ip, g_camera_struct_ptr->camera_connection_information_struct.port, g_camera_struct_ptr->camera_connection_information_struct.mount_point);
         }
         else
         {
-            printf(": Username and pass must be [nullptr] or some value.");
+            printf(": Username and pass must be [nullptr] or some value.\n");
             return -1;
         }
     }
