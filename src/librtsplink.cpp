@@ -57,12 +57,14 @@ static cv::Mat *capture_c(cv::VideoCapture *opencv_videoCapture_ptr, double *ima
 
         if (image_matris_ptr->cols <= 0 || image_matris_ptr->rows <= 0)
         {
+            delete image_matris_ptr;
             printf("Camera image reading error, image width: [%d] - height: [%d] \n", image_matris_ptr->cols, image_matris_ptr->rows);
             return nullptr;
         }
 
         if (image_matris_ptr->empty() == true)
         {
+            delete image_matris_ptr;
             printf("Camera image reading error, matrix is empty. \n");
             return nullptr;
         }
@@ -106,7 +108,7 @@ static int open_camera(cv::VideoCapture **opencv_videoCapture_ptr, const char *u
 
         g_camera_struct_ptr->fps = (*opencv_videoCapture_ptr)->get(cv::CAP_PROP_FPS);
 
-        printf("Camera opened: [%s], fps: [%d], w: [%d], h: [%d] \n", url, g_camera_struct_ptr->fps, (*opencv_videoCapture_ptr)->get(cv::CAP_PROP_FRAME_WIDTH), (*opencv_videoCapture_ptr)->get(cv::CAP_PROP_FRAME_HEIGHT));
+        printf("Camera opened: [%s], fps: [%d], w: [%.0f], h: [%.0f] \n", url, g_camera_struct_ptr->fps, (*opencv_videoCapture_ptr)->get(cv::CAP_PROP_FRAME_WIDTH), (*opencv_videoCapture_ptr)->get(cv::CAP_PROP_FRAME_HEIGHT));
     }
     catch (...)
     {

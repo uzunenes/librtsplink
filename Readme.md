@@ -1,4 +1,7 @@
-## Intoduction
+# librtsplink
+> Low-latency C++ RTSP streaming library with GStreamer and FFmpeg backends
+
+## Introduction
 librtsplink is a high-performance C++ library for low-latency RTSP streaming from IP cameras. Utilizing OpenCV and asynchronous, threaded operations, it minimizes delays and maximizes responsiveness.  librtsplink supports GStreamer and FFmpeg backends, making it perfect for real-time video applications.
 
 ## Requirements
